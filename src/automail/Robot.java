@@ -168,7 +168,7 @@ public class Robot {
 	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null);
+		return (deliveryItem == null && tube == null && specialHands == null);
 	}
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
@@ -185,13 +185,7 @@ public class Robot {
 		if (tube.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
 	}
 
-    public boolean checkSpecialHands() {
-        if (this.specialHands == null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+	public boolean checkSpecialHandsIsEmpty() {return (specialHands == null); }
 
     public void addToSpecialHands(MailItem mailItem) throws ItemTooHeavyException {
         assert(deliveryItem == null);
