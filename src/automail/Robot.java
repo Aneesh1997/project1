@@ -26,7 +26,7 @@ public class Robot {
     
     private MailItem deliveryItem = null;
     private MailItem tube = null;
-    private Mailitem fragileItem = null;
+    private MailItem specialHands = null;
     
     private int deliveryCounter;
     
