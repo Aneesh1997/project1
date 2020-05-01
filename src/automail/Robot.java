@@ -26,6 +26,7 @@ public class Robot {
     
     private MailItem deliveryItem = null;
     private MailItem tube = null;
+    private Mailitem fragileItem = null;
     
     private int deliveryCounter;
     
@@ -184,4 +185,17 @@ public class Robot {
 		if (tube.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
 	}
 
+    public boolean checkSpecialHands() {
+        if (this.specialHands == null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void addToSpecialHands(MailItem mailItem) throws ItemTooHeavyException {
+        assert(deliveryItem == null);
+        specialHands = mailItem;
+        if (specialHands.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+    }
 }
