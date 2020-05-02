@@ -17,16 +17,24 @@ public class Robot {
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING }
+    public enum RobotState { DELIVERING, WAITING, RETURNING, CAUTION} // TODO: add caution mode
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
     private IMailPool mailPool;
     private boolean receivedDispatch;
-    
+
+    private boolean wrapping_flag;
+    private int wrapping_turns;
+    private int unwrapping_turns;
+
+    // TODO: add internal counter for wrapping and unwrapping
     private MailItem deliveryItem = null;
+    private MailItem normalHands = null;
     private MailItem tube = null;
-    
+    private MailItem specialHands = null;
+
+//    private MailItem deliveryItem = null
     private int deliveryCounter;
     
 
@@ -46,6 +54,9 @@ public class Robot {
         this.mailPool = mailPool;
         this.receivedDispatch = false;
         this.deliveryCounter = 0;
+        this.wrapping_turns = 0;
+        this.unwrapping_turns = 0;
+        this.wrapping_flag = false;
     }
     
     public void dispatch() {
@@ -59,6 +70,51 @@ public class Robot {
     public void step() throws ExcessiveDeliveryException {    	
     	switch(current_state) {
     		/** This state is triggered when the robot is returning to the mailroom after a delivery */
+            case CAUTION:
+                /** Delivery mode for fragile deliveries */
+                if (!(this.wrapping_flag)) {
+                    this.wrapping_turns++;
+                    System.out.printf("T: %3d > WRAPPING [%s]%n", Clock.Time(), deliveryItem.toString());
+                    if (this.wrapping_turns == 2) {
+                        this.wrapping_flag = true;
+                    }
+                    break;
+                } else {
+                    this.wrapping_turns = 0;
+                }
+                if(current_floor == destination_floor){ // If already here drop off either way
+                    /** Delivery complete, report this to the simulator! */
+                    if (this.unwrapping_turns < 1) {
+                        unwrapping_turns++;
+                        System.out.printf("T: %3d > UNWRAPPING [%s]%n", Clock.Time(), deliveryItem.toString());
+                        break;
+                    } else {
+                        unwrapping_turns = 0;
+                    }
+                    delivery.deliver(deliveryItem);
+                    this.wrapping_flag = false;
+                    deliveryItem = null;
+                    deliveryCounter++;
+                    if(deliveryCounter > 3){  // Implies a simulation bug
+                        throw new ExcessiveDeliveryException();
+                    }
+                    /** Check if want to return, i.e. if there is no item in the tube*/
+                    if(normalHands == null){
+                        changeState(RobotState.RETURNING);
+                    }
+                    else{
+                        /** If there is another item, set the robot's route to the location to deliver the item */
+                        deliveryItem = normalHands;
+                        normalHands = null;
+                        setRoute();
+                        changeState(RobotState.DELIVERING);
+                    }
+                } else {
+                    /** The robot is not at the destination yet, move towards it! */
+                    moveTowards(destination_floor);
+                }
+                break;
+
     		case RETURNING:
     			/** If its current position is at the mailroom, then the robot should change state */
                 if(current_floor == Building.MAILROOM_LOCATION){
@@ -80,8 +136,17 @@ public class Robot {
                 if(!isEmpty() && receivedDispatch){
                 	receivedDispatch = false;
                 	deliveryCounter = 0; // reset delivery counter
-        			setRoute();
-                	changeState(RobotState.DELIVERING);
+                    if (specialHands == null) {
+                        deliveryItem = normalHands;
+                        normalHands = null;
+                        setRoute();
+                        changeState(RobotState.DELIVERING);
+                    } else {
+                        deliveryItem = specialHands;
+                        specialHands = null;
+                        setRoute();
+                        changeState(RobotState.CAUTION);
+                    }
                 }
                 break;
     		case DELIVERING:
@@ -90,7 +155,7 @@ public class Robot {
                     delivery.deliver(deliveryItem);
                     deliveryItem = null;
                     deliveryCounter++;
-                    if(deliveryCounter > 2){  // Implies a simulation bug
+                    if(deliveryCounter > 3){  // Implies a simulation bug
                     	throw new ExcessiveDeliveryException();
                     }
                     /** Check if want to return, i.e. if there is no item in the tube*/
@@ -167,14 +232,20 @@ public class Robot {
 	}
 
 	public boolean isEmpty() {
-		return (deliveryItem == null && tube == null);
+		return (normalHands == null && tube == null && specialHands == null);
 	}
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
-		assert(deliveryItem == null);
-		if(mailItem.fragile) throw new BreakingFragileItemException();
-		deliveryItem = mailItem;
-		if (deliveryItem.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+//		assert(deliveryItem == null);
+//		if(mailItem.fragile) throw new BreakingFragileItemException();
+//		deliveryItem = mailItem;
+//		if (deliveryItem.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+
+
+        assert(normalHands == null);
+        if(mailItem.fragile) throw new BreakingFragileItemException();
+        normalHands = mailItem;
+        if (normalHands.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
 	}
 
 	public void addToTube(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
@@ -184,4 +255,11 @@ public class Robot {
 		if (tube.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
 	}
 
+	public boolean checkSpecialHandsIsEmpty() {return (specialHands == null); }
+
+    public void addToSpecialHands(MailItem mailItem) throws ItemTooHeavyException {
+        assert(specialHands == null);
+        specialHands = mailItem;
+        if (specialHands.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+    }
 }

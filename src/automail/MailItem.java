@@ -71,6 +71,8 @@ public class MailItem {
    public int getWeight(){
        return weight;
    }
+
+   public boolean getFragile() {return fragile ; }
    
 	static private int count = 0;
 	static private Map<Integer, Integer> hashMap = new TreeMap<Integer, Integer>();
