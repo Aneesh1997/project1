@@ -3,6 +3,7 @@ package automail;
 import exceptions.BreakingFragileItemException;
 import exceptions.ExcessiveDeliveryException;
 import exceptions.ItemTooHeavyException;
+import strategies.Automail;
 import strategies.IMailPool;
 import java.util.Map;
 import java.util.TreeMap;
@@ -33,6 +34,8 @@ public class Robot {
     private MailItem tube = null;
     private MailItem specialHands = null;
 
+    private boolean move;
+
 //    private MailItem deliveryItem = null
     private int deliveryCounter;
     
@@ -56,6 +59,7 @@ public class Robot {
         this.wrapping_turns = 0;
         this.unwrapping_turns = 0;
         this.wrapping_flag = false;
+        this.move = false;
     }
     
     public void dispatch() {
@@ -161,13 +165,35 @@ public class Robot {
      * Generic function that moves the robot towards the destination
      * @param destination the floor towards which the robot is moving
      */
+//    private void moveTowards(int destination) {
+//        if(current_floor < destination){
+//            current_floor++;
+//        } else {
+//            current_floor--;
+//        }
+//    }
     private void moveTowards(int destination) {
-        if(current_floor < destination){
+        for(Robot rob: Automail.robots)
+        {   if(rob.deliveryItem!=null && this!=rob) {
+            if (rob.deliveryItem.getFragile())
+                if (rob.current_floor+1 == rob.deliveryItem.getDestFloor() || rob.current_floor-1 == rob.deliveryItem.getDestFloor() || rob.current_floor==rob.deliveryItem.getDestFloor())
+                {
+                    if (this.current_floor+1==rob.deliveryItem.getDestFloor() || this.current_floor-1==rob.deliveryItem.getDestFloor())
+                    {   System.out.println("dont move");
+                        move=false;
+
+                    }else move=true;
+                } else move=true;
+
+        }else move=true;
+        }
+        if(current_floor < destination && move==true){
             current_floor++;
-        } else {
+        } else if (move==true) {
             current_floor--;
         }
     }
+
     
     private String getIdTube() {
     	return String.format("%s(%1d)", id, (tube == null ? 0 : 1));

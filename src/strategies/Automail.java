@@ -5,7 +5,7 @@ import automail.Robot;
 
 public class Automail {
 	      
-    public Robot[] robots;
+    public static Robot[] robots;
     public IMailPool mailPool;
     
     public Automail(IMailPool mailPool, IMailDelivery delivery, int numRobots) {
