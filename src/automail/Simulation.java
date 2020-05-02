@@ -18,7 +18,7 @@ import java.util.Properties;
  * This class simulates the behaviour of AutoMail
  */
 public class Simulation {
-    /** Constant for the mail generator */
+	/** Constant for the mail generator */
     private static int MAIL_TO_CREATE;
     private static int MAIL_MAX_WEIGHT;
     
@@ -28,6 +28,7 @@ public class Simulation {
     
     private static ArrayList<MailItem> MAIL_DELIVERED;
     private static double total_score = 0;
+    private static CautionMode cautionMode;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
     	Properties automailProperties = new Properties();
@@ -82,12 +83,14 @@ public class Simulation {
 		// MailPool
 		IMailPool mailPool = new MailPool(robots);
 
+		cautionMode = new CautionMode(CAUTION_ENABLED);
+
 		// Check if caution mode is disabled but fragile items are enabled
-		if (CAUTION_ENABLED == false && FRAGILE_ENABLED == true) {
-			System.out.println("Caution mode is disabled but fragile items are enabled!");
-			System.out.println("Simulation unable to complete.");
-			System.exit(0);
-		}
+//		if (CAUTION_ENABLED == false && FRAGILE_ENABLED == true) {
+//			System.out.println("Caution mode is disabled but fragile items are enabled!");
+//			System.out.println("Simulation unable to complete.");
+//			System.exit(0);
+//		}
 
 
 
@@ -165,4 +168,8 @@ public class Simulation {
         System.out.println("Final Delivery time: "+Clock.Time());
         System.out.printf("Final Score: %.2f%n", total_score);
     }
+
+    public static boolean checkCaution() {
+    	return(cautionMode.isCautionEnabled());
+	}
 }

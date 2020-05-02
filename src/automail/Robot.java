@@ -17,7 +17,7 @@ public class Robot {
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, CAUTION} // TODO: add caution mode
+    public enum RobotState { DELIVERING, WAITING, RETURNING, CAUTION}
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -28,7 +28,6 @@ public class Robot {
     private int wrapping_turns;
     private int unwrapping_turns;
 
-    // TODO: add internal counter for wrapping and unwrapping
     private MailItem deliveryItem = null;
     private MailItem normalHands = null;
     private MailItem tube = null;
@@ -67,9 +66,9 @@ public class Robot {
      * This is called on every time step
      * @throws ExcessiveDeliveryException if robot delivers more than the capacity of the tube without refilling
      */
-    public void step() throws ExcessiveDeliveryException {    	
-    	switch(current_state) {
-    		/** This state is triggered when the robot is returning to the mailroom after a delivery */
+    public void step() throws ExcessiveDeliveryException {
+        switch(current_state) {
+            /** This state is triggered when the robot is returning to the mailroom after a delivery */
             case CAUTION:
                 /** Delivery mode for fragile deliveries */
                 if (!(this.wrapping_flag)) {
@@ -93,49 +92,36 @@ public class Robot {
                     }
                     delivery.deliver(deliveryItem);
                     this.wrapping_flag = false;
-                    deliveryItem = null;
-                    deliveryCounter++;
-                    if(deliveryCounter > 3){  // Implies a simulation bug
-                        throw new ExcessiveDeliveryException();
-                    }
-                    /** Check if want to return, i.e. if there is no item in the tube*/
-                    if(normalHands == null){
-                        changeState(RobotState.RETURNING);
-                    }
-                    else{
-                        /** If there is another item, set the robot's route to the location to deliver the item */
-                        deliveryItem = normalHands;
-                        normalHands = null;
-                        setRoute();
-                        changeState(RobotState.DELIVERING);
-                    }
+                    /** Check if robot need to return */
+                    checkItems();
                 } else {
                     /** The robot is not at the destination yet, move towards it! */
+                    // TODO: add floor checker to caution mode
                     moveTowards(destination_floor);
                 }
                 break;
 
-    		case RETURNING:
-    			/** If its current position is at the mailroom, then the robot should change state */
+            case RETURNING:
+                /** If its current position is at the mailroom, then the robot should change state */
                 if(current_floor == Building.MAILROOM_LOCATION){
-                	if (tube != null) {
-                		mailPool.addToPool(tube);
+                    if (tube != null) {
+                        mailPool.addToPool(tube);
                         System.out.printf("T: %3d >  +addToPool [%s]%n", Clock.Time(), tube.toString());
                         tube = null;
-                	}
-        			/** Tell the sorter the robot is ready */
-        			mailPool.registerWaiting(this);
-                	changeState(RobotState.WAITING);
+                    }
+                    /** Tell the sorter the robot is ready */
+                    mailPool.registerWaiting(this);
+                    changeState(RobotState.WAITING);
                 } else {
-                	/** If the robot is not at the mailroom floor yet, then move towards it! */
+                    /** If the robot is not at the mailroom floor yet, then move towards it! */
                     moveTowards(Building.MAILROOM_LOCATION);
-                	break;
+                    break;
                 }
-    		case WAITING:
+            case WAITING:
                 /** If the StorageTube is ready and the Robot is waiting in the mailroom then start the delivery */
                 if(!isEmpty() && receivedDispatch){
-                	receivedDispatch = false;
-                	deliveryCounter = 0; // reset delivery counter
+                    receivedDispatch = false;
+                    deliveryCounter = 0; // reset delivery counter
                     if (specialHands == null) {
                         deliveryItem = normalHands;
                         normalHands = null;
@@ -149,32 +135,18 @@ public class Robot {
                     }
                 }
                 break;
-    		case DELIVERING:
-    			if(current_floor == destination_floor){ // If already here drop off either way
+            case DELIVERING:
+                if(current_floor == destination_floor){ // If already here drop off either way
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
-                    deliveryItem = null;
-                    deliveryCounter++;
-                    if(deliveryCounter > 3){  // Implies a simulation bug
-                    	throw new ExcessiveDeliveryException();
-                    }
-                    /** Check if want to return, i.e. if there is no item in the tube*/
-                    if(tube == null){
-                    	changeState(RobotState.RETURNING);
-                    }
-                    else{
-                        /** If there is another item, set the robot's route to the location to deliver the item */
-                        deliveryItem = tube;
-                        tube = null;
-                        setRoute();
-                        changeState(RobotState.DELIVERING);
-                    }
-    			} else {
-	        		/** The robot is not at the destination yet, move towards it! */
-	                moveTowards(destination_floor);
-    			}
+                    /** Check if want to return, i.e. if there is no item in the tube */
+                    checkItems();
+                } else {
+                    /** The robot is not at the destination yet, move towards it! */
+                    moveTowards(destination_floor);
+                }
                 break;
-    	}
+        }
     }
 
     /**
@@ -261,5 +233,26 @@ public class Robot {
         assert(specialHands == null);
         specialHands = mailItem;
         if (specialHands.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+    }
+
+    public void checkItems() throws ExcessiveDeliveryException {
+        deliveryItem = null;
+        deliveryCounter++;
+        if (deliveryCounter > 3) {
+            throw new ExcessiveDeliveryException();
+        }
+        if (this.normalHands != null) {
+            deliveryItem = normalHands;
+            normalHands = null;
+            setRoute();
+            changeState(RobotState.DELIVERING);
+        } else if (this.tube != null){
+            deliveryItem = tube;
+            tube = null;
+            setRoute();
+            changeState(RobotState.DELIVERING);
+        } else {
+            changeState(RobotState.RETURNING);
+        }
     }
 }

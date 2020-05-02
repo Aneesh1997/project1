@@ -6,10 +6,12 @@ import java.util.ListIterator;
 
 import automail.MailItem;
 import automail.Robot;
+import automail.Simulation;
 import exceptions.BreakingFragileItemException;
 import exceptions.ItemTooHeavyException;
 
 public class MailPool implements IMailPool {
+
 
 	private class Item {
 		int destination;
@@ -67,11 +69,13 @@ public class MailPool implements IMailPool {
 		if (pool.size() > 0) {
 			try {
 				MailItem currentItem = j.next().mailItem;
-				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty()) {
+				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty() && Simulation.checkCaution()) {
 					robot.addToSpecialHands(currentItem);
 					j.remove();
+				} else if ((currentItem.getFragile()) && !(Simulation.checkCaution())) {
+					throw new BreakingFragileItemException();
 				} else if (!(currentItem.getFragile())) {
-					robot.addToHand(currentItem); // hand first as we want higher priority delivered first
+					robot.addToHand(currentItem); // Hand first as we want higher priority item delivered first
 					j.remove();
 				}
 //			robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
