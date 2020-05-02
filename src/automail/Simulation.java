@@ -82,6 +82,9 @@ public class Simulation {
 		// MailPool
 		IMailPool mailPool = new MailPool(robots);
 
+		// Turn on caution mode
+		CautionMode cautionMode = new CautionMode(CAUTION_ENABLED);
+
 		// Check if caution mode is disabled but fragile items are enabled
 		if (CAUTION_ENABLED == false && FRAGILE_ENABLED == true) {
 			System.out.println("Caution mode is disabled but fragile items are enabled!");
@@ -110,7 +113,7 @@ public class Simulation {
         }
         Integer seed = seedMap.get(true);
         System.out.println("Seed: " + (seed == null ? "null" : seed.toString()));
-        Automail automail = new Automail(mailPool, new ReportDelivery(), robots);
+        Automail automail = new Automail(mailPool, new ReportDelivery(), robots, cautionMode);
         MailGenerator mailGenerator = new MailGenerator(MAIL_TO_CREATE, MAIL_MAX_WEIGHT, automail.mailPool, seedMap);
         
         /** Initiate all the mail */

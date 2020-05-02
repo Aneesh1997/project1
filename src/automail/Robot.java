@@ -10,14 +10,14 @@ import java.util.TreeMap;
 /**
  * The robot delivers mail!
  */
-public class Robot {
+public abstract class Robot {
 	
     static public final int INDIVIDUAL_MAX_WEIGHT = 2000;
 
     IMailDelivery delivery;
     protected final String id;
     /** Possible states the robot can be in */
-    public enum RobotState { DELIVERING, WAITING, RETURNING, CAUTION} // TODO: add caution mode
+    public enum RobotState { DELIVERING, WAITING, RETURNING, CAUTION}
     public RobotState current_state;
     private int current_floor;
     private int destination_floor;
@@ -28,7 +28,6 @@ public class Robot {
     private int wrapping_turns;
     private int unwrapping_turns;
 
-    // TODO: add internal counter for wrapping and unwrapping
     private MailItem deliveryItem = null;
     private MailItem normalHands = null;
     private MailItem tube = null;
@@ -93,24 +92,11 @@ public class Robot {
                     }
                     delivery.deliver(deliveryItem);
                     this.wrapping_flag = false;
-                    deliveryItem = null;
-                    deliveryCounter++;
-                    if(deliveryCounter > 3){  // Implies a simulation bug
-                        throw new ExcessiveDeliveryException();
-                    }
-                    /** Check if want to return, i.e. if there is no item in the tube*/
-                    if(normalHands == null){
-                        changeState(RobotState.RETURNING);
-                    }
-                    else{
-                        /** If there is another item, set the robot's route to the location to deliver the item */
-                        deliveryItem = normalHands;
-                        normalHands = null;
-                        setRoute();
-                        changeState(RobotState.DELIVERING);
-                    }
+                    /** Check if robot need to return */
+                    checkItems();
                 } else {
                     /** The robot is not at the destination yet, move towards it! */
+                    // TODO: add floor checker to caution mode
                     moveTowards(destination_floor);
                 }
                 break;
@@ -153,22 +139,8 @@ public class Robot {
     			if(current_floor == destination_floor){ // If already here drop off either way
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
-                    deliveryItem = null;
-                    deliveryCounter++;
-                    if(deliveryCounter > 3){  // Implies a simulation bug
-                    	throw new ExcessiveDeliveryException();
-                    }
-                    /** Check if want to return, i.e. if there is no item in the tube*/
-                    if(tube == null){
-                    	changeState(RobotState.RETURNING);
-                    }
-                    else{
-                        /** If there is another item, set the robot's route to the location to deliver the item */
-                        deliveryItem = tube;
-                        tube = null;
-                        setRoute();
-                        changeState(RobotState.DELIVERING);
-                    }
+                    /** Check if want to return, i.e. if there is no item in the tube */
+                    checkItems();
     			} else {
 	        		/** The robot is not at the destination yet, move towards it! */
 	                moveTowards(destination_floor);
@@ -261,5 +233,26 @@ public class Robot {
         assert(specialHands == null);
         specialHands = mailItem;
         if (specialHands.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
+    }
+
+    public void checkItems() throws ExcessiveDeliveryException {
+	    deliveryItem = null;
+	    deliveryCounter++;
+	    if (deliveryCounter > 3) {
+	        throw new ExcessiveDeliveryException();
+        }
+	    if (this.normalHands != null) {
+            deliveryItem = normalHands;
+            normalHands = null;
+            setRoute();
+            changeState(RobotState.DELIVERING);
+        } else if (this.tube != null){
+            deliveryItem = tube;
+            tube = null;
+            setRoute();
+            changeState(RobotState.DELIVERING);
+        } else {
+	        changeState(RobotState.RETURNING);
+        }
     }
 }
