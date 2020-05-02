@@ -82,6 +82,15 @@ public class Simulation {
 		// MailPool
 		IMailPool mailPool = new MailPool(robots);
 
+		// Check if caution mode is disabled but fragile items are enabled
+		if (CAUTION_ENABLED == false && FRAGILE_ENABLED == true) {
+			System.out.println("Caution mode is disabled but fragile items are enabled!");
+			System.out.println("Simulation unable to complete.");
+			System.exit(0);
+		}
+
+
+
 		// End properties
 		
         MAIL_DELIVERED = new ArrayList<MailItem>();

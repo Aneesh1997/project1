@@ -67,7 +67,7 @@ public class MailPool implements IMailPool {
 		if (pool.size() > 0) {
 			try {
 				MailItem currentItem = j.next().mailItem;
-				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty() && pool.size() > 0) {
+				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty()) {
 					robot.addToSpecialHands(currentItem);
 					j.remove();
 				} else if (!(currentItem.getFragile())) {
@@ -77,8 +77,14 @@ public class MailPool implements IMailPool {
 //			robot.addToHand(j.next().mailItem); // hand first as we want higher priority delivered first
 //			j.remove();
 			if (pool.size() > 0) {
-				robot.addToTube(j.next().mailItem);
-				j.remove();
+				MailItem nextItem = j.next().mailItem;
+				if (!(nextItem.getFragile())) {
+					robot.addToTube(nextItem);
+					j.remove();
+				}
+
+//				robot.addToTube(j.next().mailItem);
+//				j.remove();
 			}
 			robot.dispatch(); // send the robot off if it has any items to deliver
 			i.remove();       // remove from mailPool queue
