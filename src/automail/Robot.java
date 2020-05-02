@@ -77,6 +77,7 @@ public class Robot {
                 /** Delivery mode for fragile deliveries */
                 if (!(this.wrapping_flag)) {
                     this.wrapping_turns++;
+                    Simulation.statistics.addTime();
                     System.out.printf("T: %3d > WRAPPING [%s]%n", Clock.Time(), deliveryItem.toString());
                     if (this.wrapping_turns == 2) {
                         this.wrapping_flag = true;
@@ -88,6 +89,7 @@ public class Robot {
                 if(current_floor == destination_floor){ // If already here drop off either way
                     /** Delivery complete, report this to the simulator! */
                     if (this.unwrapping_turns < 1) {
+                        Simulation.statistics.addTime();
                         unwrapping_turns++;
                         System.out.printf("T: %3d > UNWRAPPING [%s]%n", Clock.Time(), deliveryItem.toString());
                         break;
@@ -95,12 +97,13 @@ public class Robot {
                         unwrapping_turns = 0;
                     }
                     delivery.deliver(deliveryItem);
+                    Simulation.statistics.addCautionDelivery();
+                    Simulation.statistics.addCautionWeight(deliveryItem.getWeight());
                     this.wrapping_flag = false;
                     /** Check if robot need to return */
                     checkItems();
                 } else {
                     /** The robot is not at the destination yet, move towards it! */
-                    // TODO: add floor checker to caution mode
                     moveTowards(destination_floor);
                 }
                 break;
@@ -143,6 +146,8 @@ public class Robot {
                 if(current_floor == destination_floor){ // If already here drop off either way
                     /** Delivery complete, report this to the simulator! */
                     delivery.deliver(deliveryItem);
+                    Simulation.statistics.addNormalDelivery();
+                    Simulation.statistics.addNormalWeight(deliveryItem.getWeight());
                     /** Check if want to return, i.e. if there is no item in the tube */
                     checkItems();
                 } else {

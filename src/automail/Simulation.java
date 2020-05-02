@@ -29,6 +29,7 @@ public class Simulation {
     private static ArrayList<MailItem> MAIL_DELIVERED;
     private static double total_score = 0;
     private static CautionMode cautionMode;
+    public static Statistics statistics;
 
     public static void main(String[] args) throws IOException, InstantiationException, IllegalAccessException, ClassNotFoundException {
     	Properties automailProperties = new Properties();
@@ -84,15 +85,7 @@ public class Simulation {
 		IMailPool mailPool = new MailPool(robots);
 
 		cautionMode = new CautionMode(CAUTION_ENABLED);
-
-		// Check if caution mode is disabled but fragile items are enabled
-//		if (CAUTION_ENABLED == false && FRAGILE_ENABLED == true) {
-//			System.out.println("Caution mode is disabled but fragile items are enabled!");
-//			System.out.println("Simulation unable to complete.");
-//			System.exit(0);
-//		}
-
-
+		statistics = new Statistics();
 
 		// End properties
 		
@@ -133,6 +126,9 @@ public class Simulation {
             Clock.Tick();
         }
         printResults();
+        if (STATISTICS_ENABLED) {
+			statistics.printStatistics();
+		}
     }
     
     static class ReportDelivery implements IMailDelivery {
