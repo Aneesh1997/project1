@@ -133,7 +133,24 @@ public class Robot {
                 if(!isEmpty() && receivedDispatch){
                     receivedDispatch = false;
                     deliveryCounter = 0; // reset delivery counter
-                    if (specialHands == null) {
+                    
+                    	if (tube!=null && normalHands==null)
+                    	{
+                    		normalHands=tube;
+                    		tube=null;
+                    	}
+
+                        if(specialHands!=null && normalHands!=null &&(specialHands.getDestFloor()- this.current_floor) <=
+                                (normalHands.getDestFloor() - this.current_floor)){
+                        	System.out.println(specialHands.getDestFloor()+"   "+normalHands.getDestFloor());
+                        	deliveryItem = specialHands;
+                            specialHands = null;
+                            setRoute();
+                            changeState(RobotState.CAUTION);
+                        	
+                        	
+                        }
+                        else if (specialHands == null) {
                         deliveryItem = normalHands;
                         normalHands = null;
                         setRoute();

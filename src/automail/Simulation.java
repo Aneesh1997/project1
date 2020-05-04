@@ -39,9 +39,9 @@ public class Simulation {
     	automailProperties.setProperty("Floors", "10");
     	automailProperties.setProperty("Mail_to_Create", "80");
     	automailProperties.setProperty("Last_Delivery_Time", "100");
-    	automailProperties.setProperty("Caution", "false");
-    	automailProperties.setProperty("Fragile", "false");
-    	automailProperties.setProperty("Statistics", "false");
+    	automailProperties.setProperty("Caution", "true");
+    	automailProperties.setProperty("Fragile", "true");
+    	automailProperties.setProperty("Statistics", "true");
 
     	// Read properties
 		FileReader inStream = null;
@@ -69,13 +69,13 @@ public class Simulation {
 		Clock.LAST_DELIVERY_TIME = Integer.parseInt(automailProperties.getProperty("Last_Delivery_Time"));
         System.out.println("Last_Delivery_Time: " + Clock.LAST_DELIVERY_TIME);
         // Caution ability
-        CAUTION_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Caution"));
+        CAUTION_ENABLED = true;
         System.out.println("Caution enabled: " + CAUTION_ENABLED);
         // Fragile mail generation
-        FRAGILE_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Fragile"));
+        FRAGILE_ENABLED = true;
         System.out.println("Fragile enabled: " + FRAGILE_ENABLED);
         // Statistics tracking
-        STATISTICS_ENABLED = Boolean.parseBoolean(automailProperties.getProperty("Statistics"));
+        STATISTICS_ENABLED = true;
         System.out.println("Statistics enabled: " + STATISTICS_ENABLED);
 		// Robots
 		int robots = Integer.parseInt(automailProperties.getProperty("Robots"));
