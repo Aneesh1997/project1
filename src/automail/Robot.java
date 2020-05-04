@@ -5,8 +5,12 @@ import exceptions.ExcessiveDeliveryException;
 import exceptions.ItemTooHeavyException;
 import strategies.Automail;
 import strategies.IMailPool;
+import strategies.MailPool;
+
 import java.util.Map;
 import java.util.TreeMap;
+
+import static strategies.Automail.movementController;
 
 /**
  * The robot delivers mail!
@@ -178,20 +182,21 @@ public class Robot {
 //        }
 //    }
     private void moveTowards(int destination) {
-        for(Robot rob: Automail.robots)
-        {   if(rob.deliveryItem!=null && this!=rob) {
-            if (rob.deliveryItem.getFragile())
-                if (rob.current_floor+1 == rob.deliveryItem.getDestFloor() || rob.current_floor-1 == rob.deliveryItem.getDestFloor() || rob.current_floor==rob.deliveryItem.getDestFloor())
-                {
-                    if (this.current_floor+1==rob.deliveryItem.getDestFloor() || this.current_floor-1==rob.deliveryItem.getDestFloor())
-                    {   System.out.println("dont move");
-                        move=false;
-
-                    }else move=true;
-                } else move=true;
-
-        }else move=true;
-        }
+//        for(Robot rob: Automail.robots)
+//        {   if(rob.deliveryItem!=null && !(this.equals(rob))) {
+//            if (rob.deliveryItem.getFragile())
+//                if (rob.current_floor+1 == rob.deliveryItem.getDestFloor() || rob.current_floor-1 == rob.deliveryItem.getDestFloor() || rob.current_floor==rob.deliveryItem.getDestFloor())
+//                {
+//                    if (this.current_floor+1==rob.deliveryItem.getDestFloor() || this.current_floor-1==rob.deliveryItem.getDestFloor())
+//                    {   System.out.println("dont move");
+//                        move=false;
+//
+//                    }else move=true;
+//                } else move=true;
+//
+//        }else move=true
+//      }
+        movementController.checkMovement(this);
         if(current_floor < destination && move==true){
             current_floor++;
         } else if (move==true) {
@@ -222,8 +227,14 @@ public class Robot {
 	public MailItem getTube() {
 		return tube;
 	}
-    
-	static private int count = 0;
+
+	public int getCurrent_floor() {return current_floor; }
+
+    public MailItem getDeliveryItem() {
+        return deliveryItem;
+    }
+
+    static private int count = 0;
 	static private Map<Integer, Integer> hashMap = new TreeMap<Integer, Integer>();
 
 	@Override
@@ -285,5 +296,9 @@ public class Robot {
         } else {
             changeState(RobotState.RETURNING);
         }
+    }
+
+    public void setMove(boolean move) {
+	    this.move = move;
     }
 }
