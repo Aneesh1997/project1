@@ -3,9 +3,7 @@ package automail;
 import exceptions.BreakingFragileItemException;
 import exceptions.ExcessiveDeliveryException;
 import exceptions.ItemTooHeavyException;
-import strategies.Automail;
 import strategies.IMailPool;
-import strategies.MailPool;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,7 +38,6 @@ public class Robot {
 
     private boolean move;
 
-//    private MailItem deliveryItem = null
     private int deliveryCounter;
     
 
@@ -250,12 +247,6 @@ public class Robot {
 	}
 
 	public void addToHand(MailItem mailItem) throws ItemTooHeavyException, BreakingFragileItemException {
-//		assert(deliveryItem == null);
-//		if(mailItem.fragile) throw new BreakingFragileItemException();
-//		deliveryItem = mailItem;
-//		if (deliveryItem.weight > INDIVIDUAL_MAX_WEIGHT) throw new ItemTooHeavyException();
-
-
         assert(normalHands == null);
         if(mailItem.fragile) throw new BreakingFragileItemException();
         normalHands = mailItem;
