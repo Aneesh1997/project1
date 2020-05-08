@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Comparator;
 import java.util.ListIterator;
 
+import automail.CautionMode;
 import automail.MailItem;
 import automail.Robot;
 import automail.Simulation;
@@ -69,7 +70,7 @@ public class MailPool implements IMailPool {
 		if (pool.size() > 0) {
 			try {
 				MailItem currentItem = j.next().mailItem;
-				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty() && Simulation.checkCaution()) {
+				if (currentItem.getFragile() && robot.checkSpecialHandsIsEmpty() && CautionMode.isCautionEnabled()) {
 					robot.addToSpecialHands(currentItem);
 					j.remove();
 				} else if ((currentItem.getFragile()) && !(Simulation.checkCaution())) {

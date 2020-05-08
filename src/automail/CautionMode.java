@@ -1,13 +1,13 @@
 package automail;
 
 public class CautionMode {
-    private boolean cautionEnabled;
+    private static boolean cautionEnabled;
 
     public CautionMode(boolean cautionEnabled) {
         this.cautionEnabled = cautionEnabled;
     }
 
-    public boolean isCautionEnabled() {
+    public static boolean isCautionEnabled() {
         return cautionEnabled;
     }
 }
